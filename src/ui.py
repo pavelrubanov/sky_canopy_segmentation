@@ -82,7 +82,7 @@ class SkyOpennessApp(tk.Tk):
 
             percent = (percentWith512Tile + percentWith1024Tile) / 2
 
-            ws.append([img_path, f"{percentWith512Tile:.2f}", f"{percentWith1024Tile:.2f}", f"{percent}"])
+            ws.append([img_path, f"{percentWith512Tile:.2f}", f"{percentWith1024Tile:.2f}", f"{percent:.2f}"])
 
             self.log_msg(f"  → {percent:.2f}% неба")
             self.progress['value'] = idx

@@ -1,5 +1,6 @@
 from pathlib import Path
-
+import os
+import sys
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
@@ -9,9 +10,14 @@ import tensorflow as tf
 # --------------------------------------------------------------------------- #
 #                           —---  С Л У Ж Е Б Н Ы Е  ---—                     #
 # --------------------------------------------------------------------------- #
-def load_model(model_path: Path) -> tf.keras.Model:
-    """Load Keras model saved by imageseg (HDF5)."""
-    return tf.keras.models.load_model(model_path, compile=False)
+def resource_path(relative):
+    """
+    Возвращает корректный путь как в обычном запуске, так и из .exe.
+    При сборке PyInstaller помещает все ресурсы во временную папку,
+    путь к ней хранится в sys._MEIPASS.
+    """
+    base = getattr(sys, "_MEIPASS", os.path.abspath("."))
+    return os.path.join(base, relative)
 
 
 # ---------- utils ----------------------------------------------------------
@@ -63,7 +69,7 @@ def predict_mask(
         if pred_small.ndim == 3:
             pred_small = pred_small[..., 0]  # take single class
 
-        # --- upsample back to 1024×1024 --------------------------------------
+        # --- upsample back --------------------------------------
         pred_big = np.array(
             Image.fromarray(pred_small).resize((tile_size, tile_size), Image.BILINEAR),
             dtype=np.float32,
@@ -77,13 +83,14 @@ def predict_mask(
     return mask
 
 
-def process(image_path, tile_size, model='./imageseg_canopy_model.hdf5', save=False):
+def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', save=True):
     # ---------- load image --------------------------------------------------
     img = Image.open(image_path).convert("RGB")
     img_np = np.array(img)
 
     # ---------- load model & predict ---------------------------------------
-    model = load_model(model)
+    relative_model_path = resource_path(model_path)
+    model = tf.keras.models.load_model(relative_model_path, compile=False)
     mask = predict_mask(model, img_np, tile_size=tile_size, overlap=128)
 
     mask_vis = (np.clip(mask, 0, 1) * 255).round().astype(np.uint8)
