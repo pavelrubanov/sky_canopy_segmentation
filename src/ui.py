@@ -64,27 +64,20 @@ class SkyOpennessApp(tk.Tk):
         excel_path = 'results.xlsx'
         wb = Workbook()
         ws = wb.active
-        ws.append(['img_path', 'percentWith512Tile', 'percentWith1024Tile', 'percent'])
+        ws.append(['img_path', 'percent'])
 
         for idx, img_path in enumerate(self.images, start=1):
             base = os.path.splitext(os.path.basename(img_path))[0]
             self.log_msg(f"[{idx}/{total}] Обработка {base}…")
 
-            percentWith512Tile = process(
+            percent_with1024_tile = process(
                 image_path=img_path,
-                tile_size=512
+                tile_size=1024,
             )
 
-            percentWith1024Tile = process(
-                image_path=img_path,
-                tile_size=1024
-            )
+            ws.append([img_path, f"{percent_with1024_tile:.2f}"])
 
-            percent = (percentWith512Tile + percentWith1024Tile) / 2
-
-            ws.append([img_path, f"{percentWith512Tile:.2f}", f"{percentWith1024Tile:.2f}", f"{percent:.2f}"])
-
-            self.log_msg(f"  → {percent:.2f}% неба")
+            self.log_msg(f"  → {percent_with1024_tile:.2f}% неба")
             self.progress['value'] = idx
 
         # Сохраняем Excel файл
