@@ -1,4 +1,3 @@
-from pathlib import Path
 import os
 import sys
 import numpy as np
@@ -61,7 +60,7 @@ def predict_mask(
         tile = img[y0:y1, x0:x1, :]
 
         # --- downscale to 256×256 and model inference ----------------------
-        tile_small = np.array(Image.fromarray(tile).resize((resize_to, resize_to), Image.BILINEAR))
+        tile_small = np.array(Image.fromarray(tile).resize((resize_to, resize_to), Image.LANCZOS))
         tile_small = tile_small.astype(np.float32) / 255.0
         tile_small = np.expand_dims(tile_small, 0)  # BCHW
 
@@ -71,7 +70,7 @@ def predict_mask(
 
         # --- upsample back --------------------------------------
         pred_big = np.array(
-            Image.fromarray(pred_small).resize((tile_size, tile_size), Image.BILINEAR),
+            Image.fromarray(pred_small).resize((tile_size, tile_size), Image.LANCZOS),
             dtype=np.float32,
         )
 
@@ -83,9 +82,38 @@ def predict_mask(
     return mask
 
 
+def resize_large_image(img, max_size=1024):
+    """Масштабирует изображение так, чтобы хотя бы один из размеров был не более max_size."""
+    width, height = img.size
+
+    # Если оба размера меньше или равны max_size, не меняем изображение
+    if width <= max_size and height <= max_size:
+        return img
+
+    # Вычисляем соотношение сторон и новые размеры
+    if height <= width:
+        if height <= max_size:
+            return img
+        else:
+            new_height = max_size
+            new_width = int(width * (max_size / height))
+    else:
+        if width <= max_size:
+            return img
+        else:
+            new_width = max_size
+            new_height = int(height * (max_size / width))
+
+    # Масштабируем изображение сохраняя пропорции
+    return img.resize((new_width, new_height), Image.LANCZOS)
+
+def skale_large_image(img, size=1080):
+    return img.resize((size, size), Image.LANCZOS)
+
 def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', save=True, threshold=0):
     # ---------- load image --------------------------------------------------
     img = Image.open(image_path).convert("RGB")
+    img = resize_large_image(img, max_size=1080)  # Масштабируем изображение
     img_np = np.array(img)
 
     # ---------- load model & predict ---------------------------------------
@@ -104,6 +132,8 @@ def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', sa
         out_path = image_path + f'_{threshold}_mask{tile_size}.png'
         Image.fromarray(mask_vis).save(out_path)
         print(f"Saved mask → {out_path}")
+
+        img.save(image_path + f'_resized.png')
 
     return np.mean(mask) * 100
 
