@@ -97,12 +97,22 @@ class SkyOpennessApp(tk.Tk):
 
         excel_path = os.path.join(self.output_dir, 'results.xlsx')
 
+        # ---------- проверка на существование файла ---------- #
+        if os.path.exists(excel_path):
+            overwrite = messagebox.askyesno(
+                "Предупреждение",
+                f"Файл '{excel_path}' уже существует и будет перезаписан.\nПродолжить?"
+            )
+            if not overwrite:
+                self.log_msg("Операция отменена пользователем.")
+                return
+        # ----------------------------------------------------- #
+
         wb = Workbook()
         ws = wb.active
         ws.append(['img_path', 'percent'])
 
         save_masks = self.save_masks_var.get()
-        # получаем выбранный размер тайла (по умолчанию 1024, если что-то пошло не так)
         try:
             tile_size = int(self.tile_size_var.get())
         except ValueError:
@@ -114,7 +124,7 @@ class SkyOpennessApp(tk.Tk):
 
             percent = process(
                 image_path=img_path,
-                tile_size=tile_size,    # ← передаём выбранный размер
+                tile_size=tile_size,
                 save=save_masks,
             )
 
