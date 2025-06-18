@@ -136,4 +136,3 @@ def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', sa
         img.save(image_path + f'_resized.png')
 
     return np.mean(mask) * 100
-
