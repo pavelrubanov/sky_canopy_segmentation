@@ -110,7 +110,7 @@ def resize_large_image(img, max_size=1024):
 def skale_large_image(img, size=1080):
     return img.resize((size, size), Image.LANCZOS)
 
-def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', save=True, threshold=0):
+def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', save=True):
     # ---------- load image --------------------------------------------------
     img = Image.open(image_path).convert("RGB")
     img = resize_large_image(img, max_size=1080)  # Масштабируем изображение
@@ -123,16 +123,10 @@ def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', sa
     mask = predict_mask(model, img_np, tile_size=tile_size, overlap=128)
     mask_vis = (np.clip(mask, 0, 1) * 255).round().astype(np.uint8)
 
-    if threshold > 0:
-        mask = mask > threshold
-        mask_vis = (mask * 255).astype(np.uint8)
-
     # ---------- save --------------------------------------------------------
     if save:
-        out_path = image_path + f'_{threshold}_mask{tile_size}.png'
+        out_path = image_path + f'_mask.png'
         Image.fromarray(mask_vis).save(out_path)
         print(f"Saved mask → {out_path}")
-
-        img.save(image_path + f'_resized.png')
 
     return np.mean(mask) * 100
