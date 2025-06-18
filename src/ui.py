@@ -11,8 +11,13 @@ from predict import process
 class SkyOpennessApp(tk.Tk):
     def __init__(self):
         super().__init__()
+
         self.title("Sky segmentation")
-        self.geometry("500x400")
+        self.geometry("600x500")
+
+        # запрет изменения размеров окна
+        self.resizable(False, False)
+
         self.images: list[str] = []
         self.output_dir: str | None = None
 
