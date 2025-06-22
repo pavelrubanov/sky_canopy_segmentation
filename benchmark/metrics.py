@@ -44,6 +44,7 @@ def evaluate(process,dataset
     details: List[Dict[str, Any]] = []
 
     for img, gt_mask, gt_percent in dataset:
+        print(f"Processing image {img.stem}...")
         pred_percent, pred_mask = process(img)
 
         # --- pixel‑level IoU ---
@@ -88,7 +89,7 @@ def evaluate(process,dataset
     }
 
 def local_process(img):
-    return process(img, tile_size=256, model_path='../src/imageseg_canopy_model.hdf5', save=False)
+    return process(img, tile_size=1080, model_path='../src/imageseg_canopy_model.hdf5', save=False)
 
 # -----------------------------------------------------------------------------
 # Simple CLI demo (optional)
@@ -112,4 +113,4 @@ if __name__ == "__main__":
 
     metrics = evaluate(local_process, data)
     pprint(metrics)
-    visualize_metrics(metrics, save_path = 'metrics_256.png')
+    visualize_metrics(metrics, save_path = 'metrics_1080.png')

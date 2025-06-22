@@ -36,7 +36,7 @@ def visualize_metrics(metrics, figsize = (15, 5),
 
     # --- 2. Predicted vs Ground Truth ---------------------------------------
     axes[1].scatter(gt_vals, pr_vals, alpha=0.6)
-    axes[1].plot([0, 100], [0, 100], ls="--")      # y = x
+    axes[1].plot([0, 25], [0, 25], ls="--")      # y = x
     axes[1].set_xlabel("Ground truth gap fraction, %")
     axes[1].set_ylabel("Predicted gap fraction, %")
     axes[1].set_title(f"Prediction vs GT\nMAE = {metrics['mae_percent']:.2f} pp")
