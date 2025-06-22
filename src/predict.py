@@ -35,7 +35,7 @@ def sliding_windows(h: int, w: int, tile: int, stride: int):
         for x0 in x_starts:
             yield y0, y0 + tile, x0, x0 + tile
 
-def resize_large_image(img, max_size=1024):
+def resize_large_image(img, max_size=1080):
     """Масштабирует изображение так, чтобы хотя бы один из размеров был не более max_size."""
     width, height = img.size
 
