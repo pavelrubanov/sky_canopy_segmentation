@@ -37,14 +37,8 @@ def main():
         'Image #',
         'Pred 512, %',
         'Pred 1024, %',
-        'Pred Avg, %',
-        'Pred 512 thr, %',
-        'Pred 1024 thr, %',
-        'Pred Avg thr, %',
         'Real min, %',
-        'Real max, %',
-        'Resized real min, %',
-        'Resized real max, %'
+        'Real max, %'
     )]
 
     for i in range(1, 10):
@@ -59,47 +53,19 @@ def main():
         resized_mask = np.array(resize_large_image(Image.open(mask_path), max_size=1024).convert('L'))
 
         model_path = '../src/imageseg_canopy_model.hdf5'
-        percentage_with_512_tile = process(
-            str(image_path), model_path=model_path, tile_size=512, save=True
-        )
-        percentage_with_512_tile_with_threshold = process(
-            str(image_path),
-            model_path=model_path,
-            tile_size=512,
-            save=True,
-            threshold=0.5,
-        )
-        percentage_with_1024_tile = process(
-            str(image_path), model_path=model_path, tile_size=1024, save=True
-        )
-        percentage_with_1024_tile_with_threshold = process(
-            str(image_path),
-            model_path=model_path,
-            tile_size=1024,
-            save=True,
-            threshold=0.5,
-        )
 
-        average_percent1 = (percentage_with_512_tile + percentage_with_1024_tile) / 2
-        average_percent2 = (percentage_with_512_tile_with_threshold+ percentage_with_1024_tile_with_threshold) / 2
+        percentage_with_512_tile = process(str(image_path), model_path=model_path, tile_size=512, save=True)
+        percentage_with_1024_tile = process(str(image_path), model_path=model_path, tile_size=1024, save=True)
 
         real_percent_min, real_percent_max = calculate_real_percentage(mask)
-        resized_real_percent_min, resized_real_percent_max = calculate_real_percentage(resized_mask)
 
-        # Добавляем строку для Excel
         excel_rows.append(
             (
                 i,
                 round(percentage_with_512_tile, 4),
                 round(percentage_with_1024_tile, 4),
-                round(average_percent1, 4),
-                round(percentage_with_512_tile_with_threshold, 4),
-                round(percentage_with_1024_tile_with_threshold, 4),
-                round(average_percent2, 4),
                 round(real_percent_min, 4),
-                round(real_percent_max, 4),
-                round(resized_real_percent_min, 4),
-                round(resized_real_percent_max, 4),
+                round(real_percent_max, 4)
             )
         )
 
