@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from openpyxl import Workbook
 from tkinter import filedialog, messagebox, scrolledtext
-from tkinter.ttk import Progressbar, Button, Label, Checkbutton, Combobox
+from tkinter.ttk import Progressbar, Button, Label, Checkbutton
 
 from predict import process
 
@@ -23,7 +23,6 @@ class SkyOpennessApp(tk.Tk):
 
         # --- Дополнительные переменные интерфейса ---
         self.save_masks_var = tk.BooleanVar(value=False)
-        self.tile_size_var = tk.StringVar(value="1024")
 
         # Кнопка выбора изображений
         btn1 = Button(self, text="Выбрать изображения", command=self.choose_images)
@@ -32,7 +31,7 @@ class SkyOpennessApp(tk.Tk):
         self.lbl_imgs = Label(self, text="Файлы не выбраны")
         self.lbl_imgs.pack(fill='x', padx=5, pady=(0, 5))
 
-        # ----- Чекбокс и Combobox в одной строке -----
+        # ----- Чекбокс сохранения ------
         opt_frame = tk.Frame(self)
         opt_frame.pack(fill='x', padx=5, pady=(0, 5))
 
@@ -42,18 +41,7 @@ class SkyOpennessApp(tk.Tk):
             variable=self.save_masks_var
         )
         chk1.pack(side='left')
-
-        Label(opt_frame, text="Размер тайла:").pack(side='left', padx=(15, 2))
-
-        cmb_tiles = Combobox(
-            opt_frame,
-            textvariable=self.tile_size_var,
-            values=("512", "1024"),
-            state="readonly",
-            width=5
-        )
-        cmb_tiles.pack(side='left')
-        # ---------------------------------------------
+        # -----------------------------------------------------
 
         # Кнопка запуска
         btn3 = Button(self, text="Запустить обработку", command=self.start_processing)
@@ -118,10 +106,7 @@ class SkyOpennessApp(tk.Tk):
         ws.append(['img_path', 'percent'])
 
         save_masks = self.save_masks_var.get()
-        try:
-            tile_size = int(self.tile_size_var.get())
-        except ValueError:
-            tile_size = 1024
+        tile_size = 810
 
         for idx, img_path in enumerate(self.images, start=1):
             base = os.path.splitext(os.path.basename(img_path))[0]
@@ -142,6 +127,7 @@ class SkyOpennessApp(tk.Tk):
         self.log_msg(f"Результаты сохранены в {excel_path}")
         messagebox.showinfo("Готово", "Все изображения обработаны!")
         self.log_msg("Завершено.")
+
 
 if __name__ == "__main__":
     SkyOpennessApp().mainloop()
