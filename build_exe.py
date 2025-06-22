@@ -16,8 +16,8 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-ENTRY_POINT   = PROJECT_ROOT / "ui.py"
-MODEL_FILE    = PROJECT_ROOT / "imageseg_canopy_model.hdf5"
+ENTRY_POINT   = PROJECT_ROOT / "src/ui.py"
+MODEL_FILE    = PROJECT_ROOT / "src/imageseg_canopy_model.hdf5"
 EXE_NAME      = "sky_segmentation"
 
 
@@ -41,7 +41,6 @@ def build_exe() -> None:
         "-m",
         "PyInstaller",
         "--onefile",
-        "--windowed",
         "--noconfirm",
         "--name", EXE_NAME,
         "--add-data", add_data,

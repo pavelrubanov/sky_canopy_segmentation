@@ -21,8 +21,8 @@ if sys.platform != "darwin":
     sys.exit("Скрипт предназначен только для macOS.")
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-ENTRY_POINT  = PROJECT_ROOT / "ui.py"
-MODEL_FILE   = PROJECT_ROOT / "imageseg_canopy_model.hdf5"
+ENTRY_POINT  = PROJECT_ROOT / "src/ui.py"
+MODEL_FILE   = PROJECT_ROOT / "src/imageseg_canopy_model.hdf5"
 APP_NAME     = "SkySegmentation"
 
 
@@ -40,7 +40,6 @@ def build_mac_app() -> None:
 
     cmd = [
         sys.executable, "-m", "PyInstaller",
-        "--windowed",                 # создаём .app, а не CLI-утилиту
         "--noconfirm",
         "--name", APP_NAME,
         "--add-data", add_data,
