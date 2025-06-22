@@ -1,18 +1,19 @@
 # -----------------------------------------------------------------------------
-# Visualisation helper
+# Визуализация метрик
 # -----------------------------------------------------------------------------
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL.ImagePath import Path
 
 
-def visualize_metrics(metrics, figsize = (15, 5),
-                      save_path = './metrics'):
+def visualize_metrics(metrics, figsize=(20, 5),
+                      save_path: str | None = './metrics'):
     """
-    Рисует три классических сюжета:
-      1) распределение IoU (box-plot);
-      2) scatter «предсказано vs. истина» с диагональю и подписями MAE;
-      3) график Bland–Altman c средним смещением и пределами согласия ±1.96 SD.
+    Рисует четыре сюжета:
+      1) столбец со смещением (bias);
+      2) столбец с MAE;
+      3) диаграмма рассеяния «предсказано vs. истина»;
+      4) график Бланда–Альтмана.
 
     Parameters
     ----------
@@ -21,36 +22,51 @@ def visualize_metrics(metrics, figsize = (15, 5),
     save_path    : если указан — PNG будет сохранён по этому пути
     """
     per_img = metrics["per_image"]
-    iou_vals = np.array([d["iou"] for d in per_img], dtype=float)
-    gt_vals  = np.array([d["gt_percent"]  for d in per_img], dtype=float)
-    pr_vals  = np.array([d["pred_percent"] for d in per_img], dtype=float)
+
+    # --- данные --------------------------------------------------------------
+    gt_vals = np.array([d["gt_percent"] for d in per_img], dtype=float)
+    pr_vals = np.array([d["pred_percent"] for d in per_img], dtype=float)
     diff_vals = pr_vals - gt_vals
     mean_pair = (gt_vals + pr_vals) / 2.0
 
-    fig, axes = plt.subplots(1, 3, figsize=figsize)
+    bias_val = metrics["bias_percent"]
+    mae_val = metrics["mae_percent"]
 
-    # --- 1. IoU distribution -------------------------------------------------
-    axes[0].boxplot(iou_vals, vert=True, showfliers=False)
-    axes[0].set_ylabel("IoU")
-    axes[0].set_title(f"IoU distribution\nmean = {metrics['mean_iou']:.3f}")
+    fig, axes = plt.subplots(1, 4, figsize=figsize, gridspec_kw={"width_ratios": [1, 1, 3, 3]}
+)
 
-    # --- 2. Predicted vs Ground Truth ---------------------------------------
-    axes[1].scatter(gt_vals, pr_vals, alpha=0.6)
-    axes[1].plot([0, 25], [0, 25], ls="--")      # y = x
-    axes[1].set_xlabel("Ground truth gap fraction, %")
-    axes[1].set_ylabel("Predicted gap fraction, %")
-    axes[1].set_title(f"Prediction vs GT\nMAE = {metrics['mae_percent']:.2f} pp")
+    # --- 1. Бар: смещение ----------------------------------------------------
+    axes[0].bar([0], [bias_val], width=0.1, color="steelblue")
+    axes[0].set_xticks([0])
+    axes[0].set_xticklabels(["Смещение, %"])
+    axes[0].set_ylabel("Значение (процентные пункты)")
+    axes[0].set_ylim(-1, 1)
+    axes[0].set_title("Смещение (bias)")
 
-    # --- 3. Bland–Altman plot ------------------------------------------------
+    # --- 2. Бар: MAE ---------------------------------------------------------
+    axes[1].bar([0], [mae_val], width=0.1, color="darkorange")
+    axes[1].set_xticks([0])
+    axes[1].set_xticklabels(["MAE, п.п."])
+    axes[1].set_ylim(0, 3)
+    axes[1].set_title("Средняя абсолютная\nошибка (MAE)")
+
+    # --- 3. Предсказано vs Истина -------------------------------------------
+    axes[2].scatter(gt_vals, pr_vals, alpha=0.6)
+    axes[2].plot([0, 25], [0, 25], ls="--")      # линия y = x
+    axes[2].set_xlabel("Истинная доля просвета, %")
+    axes[2].set_ylabel("Предсказанная доля просвета, %")
+    axes[2].set_title(f"Предсказание vs истина\nMAE = {mae_val:.2f} п.п.")
+
+    # --- 4. График Бланда–Альтмана ------------------------------------------
     ba = metrics["bland_altman"]
-    axes[2].scatter(mean_pair, diff_vals, alpha=0.6)
-    axes[2].axhline(ba["mean_diff"],   ls="--", label="bias")
-    axes[2].axhline(ba["loa_lower"],   ls="--", color="red",  label="limits")
-    axes[2].axhline(ba["loa_upper"],   ls="--", color="red")
-    axes[2].set_xlabel("Mean of GT and prediction, %")
-    axes[2].set_ylabel("Prediction − GT, % points")
-    axes[2].set_title("Bland–Altman plot")
-    axes[2].legend(frameon=False)
+    axes[3].scatter(mean_pair, diff_vals, alpha=0.6)
+    axes[3].axhline(ba["mean_diff"], ls="--", label="смещение")
+    axes[3].axhline(ba["loa_lower"], ls="--", color="red", label="границы")
+    axes[3].axhline(ba["loa_upper"], ls="--", color="red")
+    axes[3].set_xlabel("Среднее GT и предсказания, %")
+    axes[3].set_ylabel("Предсказание − GT, п.п.")
+    axes[3].set_title("График Бланда–Альтмана")
+    axes[3].legend(frameon=False)
 
     plt.tight_layout()
     if save_path:
