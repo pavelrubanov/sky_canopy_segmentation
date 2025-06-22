@@ -41,6 +41,7 @@ def build_exe() -> None:
         "-m",
         "PyInstaller",
         "--onefile",
+        "--windowed",
         "--noconfirm",
         "--name", EXE_NAME,
         "--add-data", add_data,

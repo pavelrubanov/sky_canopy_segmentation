@@ -56,7 +56,7 @@ def predict_mask(
     prob_sum = np.zeros((h, w), dtype=np.float32)
     prob_cnt = np.zeros((h, w), dtype=np.float32)
 
-    for y0, y1, x0, x1 in tqdm(list(sliding_windows(h, w, tile_size, stride)), desc="tiles"):
+    for y0, y1, x0, x1 in sliding_windows(h, w, tile_size, stride):
         tile = img[y0:y1, x0:x1, :]
 
         # --- downscale to 256×256 and model inference ----------------------
@@ -87,7 +87,7 @@ def resize_large_image(img, max_size=1024):
     width, height = img.size
 
     # Если оба размера меньше или равны max_size, не меняем изображение
-    if width <= max_size and height <= max_size:
+    if width <= max_size or height <= max_size:
         return img
 
     # Вычисляем соотношение сторон и новые размеры
@@ -107,9 +107,6 @@ def resize_large_image(img, max_size=1024):
     # Масштабируем изображение сохраняя пропорции
     return img.resize((new_width, new_height), Image.LANCZOS)
 
-def skale_large_image(img, size=1080):
-    return img.resize((size, size), Image.LANCZOS)
-
 def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', save=True):
     # ---------- load image --------------------------------------------------
     img = Image.open(image_path).convert("RGB")
@@ -127,6 +124,5 @@ def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', sa
     if save:
         out_path = image_path + f'_mask.png'
         Image.fromarray(mask_vis).save(out_path)
-        print(f"Saved mask → {out_path}")
 
     return np.mean(mask) * 100
