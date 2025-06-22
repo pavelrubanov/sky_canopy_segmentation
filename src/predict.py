@@ -35,6 +35,28 @@ def sliding_windows(h: int, w: int, tile: int, stride: int):
         for x0 in x_starts:
             yield y0, y0 + tile, x0, x0 + tile
 
+def resize_large_image(img, max_size=1024):
+    """Масштабирует изображение так, чтобы хотя бы один из размеров был не более max_size."""
+    width, height = img.size
+
+    if width <= max_size or height <= max_size:
+        return img
+
+    if height <= width:
+        if height <= max_size:
+            return img
+        else:
+            new_height = max_size
+            new_width = int(width * (max_size / height))
+    else:
+        if width <= max_size:
+            return img
+        else:
+            new_width = max_size
+            new_height = int(height * (max_size / width))
+
+    return img.resize((new_width, new_height), Image.LANCZOS)
+
 
 # --------------------------------------------------------------------------- #
 #                           —---  О С Н О В Н О Е  ---—                       #
@@ -47,7 +69,7 @@ def predict_mask(
         overlap: int = 128,
 ) -> np.ndarray:
     """
-    Вернёт вероятностную маску (float32, 0‒1) той же формы, что и *img* (с паддингом).
+    Вернёт вероятностную маску (float32, 0‒1) той же формы, что и *img*.
     """
     assert tile_size % resize_to == 0, "resize_to must divide tile_size"
     stride = int(tile_size - overlap)
@@ -81,32 +103,6 @@ def predict_mask(
     mask = prob_sum / prob_cnt
     return mask
 
-
-def resize_large_image(img, max_size=1024):
-    """Масштабирует изображение так, чтобы хотя бы один из размеров был не более max_size."""
-    width, height = img.size
-
-    # Если оба размера меньше или равны max_size, не меняем изображение
-    if width <= max_size or height <= max_size:
-        return img
-
-    # Вычисляем соотношение сторон и новые размеры
-    if height <= width:
-        if height <= max_size:
-            return img
-        else:
-            new_height = max_size
-            new_width = int(width * (max_size / height))
-    else:
-        if width <= max_size:
-            return img
-        else:
-            new_width = max_size
-            new_height = int(height * (max_size / width))
-
-    # Масштабируем изображение сохраняя пропорции
-    return img.resize((new_width, new_height), Image.LANCZOS)
-
 def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', save=True):
     # ---------- load image --------------------------------------------------
     img = Image.open(image_path).convert("RGB")
@@ -125,4 +121,4 @@ def process(image_path, tile_size, model_path='./imageseg_canopy_model.hdf5', sa
         out_path = image_path + f'_mask.png'
         Image.fromarray(mask_vis).save(out_path)
 
-    return np.mean(mask) * 100
+    return (np.mean(mask) * 100, mask)

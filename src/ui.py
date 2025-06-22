@@ -127,7 +127,7 @@ class SkyOpennessApp(tk.Tk):
             base = os.path.splitext(os.path.basename(img_path))[0]
             self.log_msg(f"[{idx}/{total}] Обработка {base}…")
 
-            percent = process(
+            percent, _ = process(
                 image_path=img_path,
                 tile_size=tile_size,
                 save=save_masks,
