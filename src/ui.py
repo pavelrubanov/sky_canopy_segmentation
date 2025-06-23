@@ -57,9 +57,8 @@ class SkyOpennessApp(tk.Tk):
 
     def choose_images(self):
         files = filedialog.askopenfilenames(
-            title="Select images",
-            filetypes=[("Images", "*.jpg;*.jpeg;*.png")]
-        )
+            title="Выберите изображения",
+            filetypes=[("Изображения", "*.jpg *.jpeg *.png *.tif *.tiff *.bmp *.heic *.heif")])
         if files:
             self.images = list(files)
             # каталог, где лежит первый выбранный файл

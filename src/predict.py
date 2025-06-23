@@ -2,13 +2,14 @@ import os
 import sys
 import numpy as np
 from PIL import Image
-from tqdm import tqdm
 import tensorflow as tf
 
+import pillow_heif
+pillow_heif.register_heif_opener()
 
 # --------------------------------------------------------------------------- #
 #                           —---  С Л У Ж Е Б Н Ы Е  ---—                     #
-# --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #я
 def resource_path(relative):
     """
     Возвращает корректный путь как в обычном запуске, так и из .exe.
