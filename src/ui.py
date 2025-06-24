@@ -103,14 +103,14 @@ class SkyOpennessApp(tk.Tk):
 
         wb = Workbook()
         ws = wb.active
-        ws.append(['img_path', 'percent'])
+        ws.append(['img_name', 'percent'])
 
         save_masks = self.save_masks_var.get()
         tile_size = 810
 
         for idx, img_path in enumerate(self.images, start=1):
-            base = os.path.splitext(os.path.basename(img_path))[0]
-            self.log_msg(f"[{idx}/{total}] Обработка {base}…")
+            img_name = os.path.basename(img_path)
+            self.log_msg(f"[{idx}/{total}] Обработка {img_name}…")
 
             percent, _ = process(
                 image_path=img_path,
@@ -118,7 +118,7 @@ class SkyOpennessApp(tk.Tk):
                 save=save_masks,
             )
 
-            ws.append([img_path, f"{percent:.2f}"])
+            ws.append([img_name, f"{percent:.2f}"])
 
             self.log_msg(f"  → {percent:.2f}% неба")
             self.progress['value'] = idx
