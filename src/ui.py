@@ -1,4 +1,5 @@
 import os
+import re
 import threading
 import tkinter as tk
 from openpyxl import Workbook
@@ -87,18 +88,18 @@ class SkyOpennessApp(tk.Tk):
         self.progress['maximum'] = total
         self.progress['value'] = 0
 
-        excel_path = os.path.join(self.output_dir, 'results.xlsx')
-
-        # ---------- проверка на существование файла ---------- #
-        if os.path.exists(excel_path):
-            overwrite = messagebox.askyesno(
-                "Предупреждение",
-                f"Файл '{excel_path}' уже существует и будет перезаписан.\nПродолжить?"
-            )
-            if not overwrite:
-                self.log_msg("Операция отменена пользователем.")
-                return
-        # ----------------------------------------------------- #
+        # ------------------------------------------------------------------
+        # формируем уникальное имя вида result(N).xlsx  (0 ≤ N, целое)
+        pattern = re.compile(r"result\((\d+)\)\.xlsx$")
+        indices = [
+            int(m.group(1))
+            for name in os.listdir(self.output_dir)
+            if (m := pattern.match(name))
+        ]
+        next_idx = max(indices) + 1 if indices else 0
+        excel_filename = f"result({next_idx}).xlsx"
+        excel_path = os.path.join(self.output_dir, excel_filename)
+        # ------------------------------------------------------------------
 
         wb = Workbook()
         ws = wb.active
