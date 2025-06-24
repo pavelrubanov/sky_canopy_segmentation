@@ -40,6 +40,7 @@ def build_exe() -> None:
         sys.executable,
         "-m",
         "PyInstaller",
+        "--windowed",
         "--onefile",
         "--noconfirm",
         "--name", EXE_NAME,
